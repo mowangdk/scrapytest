@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Time  :  2018/5/4 上午11:22
-
+import json
+import urllib
 import urllib2
 import cookielib
 
@@ -40,11 +41,49 @@ def read_cookie_fromfile():
     # 从文件中读取cookie内容到变量
     cookie.load('cookie.txt', ignore_discard=True, ignore_expires=True)
     # 创建请求的request
-    req = urllib2.Request("https://www.ekwing.com/exam/special/papergenerate")
+    # req = urllib2.Request("https://www.ekwing.com/exam/special/papergenerate")
     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookie))
-    response = opener.open(req)
-    with open('test.html', 'wb') as t:
-        t.write(response.read())
+    all_base_headers = \
+        {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6',
+         'Referer': 'https://www.ekwing.com/exam/special/papergenerate'}
+
+    get_all_regions = urllib2.Request("https://www.ekwing.com/exam/review/loadmodcity",
+                                      data=urllib.urlencode({'city_id': 1495,
+                                                             'page_from': 'special',
+                                                             'province_id': 107}),
+                                      headers=all_base_headers)
+
+    region_response = json.loads(opener.open(get_all_regions).read())
+    province_list = {province_data['id']: province_data['name'] for i in region_response['data']['group_list'] for province_data in i['list']}
+
+    filter_paper_form_data = {
+        'province_id': 107, 'province_name': '翼课网',
+        'client_type': 0, 'exam_type': 1, 'ext[name_id]': None, 'grade': 0, 'grade_type': 3, 'level': 0,
+        'model_type_publish': -1, 'paper_type': 0, 'paper_year': 0, 'publish_type': 0, 'special_type': 2
+    }
+    get_paper_model_list_form_data = {
+        'model_type': None,
+        'page': 1,
+        'page_from': 'special',
+        'search_params': ''
+    }
+    paper_generate = urllib2.Request("https://www.ekwing.com/exam/special/ajaxpapergenerate",
+                                     data=urllib.urlencode(filter_paper_form_data),
+                                     headers=all_base_headers)
+    junor_response = json.loads(opener.open(paper_generate).read())
+    paper_datas = junor_response['data']['paper_list']
+    for paper in paper_datas:
+        paper_id = paper.get('id')
+        get_paper_model_list_form_data['paper_id'] = str(paper_id)
+        model_lists_request = urllib2.Request("https://www.ekwing.com/exam/special/ajaxgetmodellist",
+                                              data=urllib.urlencode(get_paper_model_list_form_data),
+                                              headers=all_base_headers)
+        model_lists_data = json.loads(opener.open(model_lists_request).read())
+        items_data_serialize(paper, model_lists_data)
+
+
+def items_data_serialize(current_paper, model_datas):
+    pass
 
 
 if __name__ == '__main__':
