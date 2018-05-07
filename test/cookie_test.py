@@ -61,11 +61,10 @@ def read_cookie_fromfile():
         'client_type': 0, 'exam_type': 1, 'ext[name_id]': None, 'grade': 0, 'grade_type': 3, 'level': 0,
         'model_type_publish': -1, 'paper_type': 0, 'paper_year': 0, 'publish_type': 0, 'special_type': 2
     }
-    get_paper_model_list_form_data = {
+    paper_model_list_form_data = {
         'model_type': None,
         'page': 1,
         'page_from': 'special',
-        'search_params': ''
     }
     paper_generate = urllib2.Request("https://www.ekwing.com/exam/special/ajaxpapergenerate",
                                      data=urllib.urlencode(filter_paper_form_data),
@@ -74,15 +73,21 @@ def read_cookie_fromfile():
     paper_datas = junor_response['data']['paper_list']
     for paper in paper_datas:
         paper_id = paper.get('id')
-        get_paper_model_list_form_data['paper_id'] = str(paper_id)
+        paper_model_list_form_data['paper_id'] = str(paper_id)
+        paper_model_list_form_data['search_params'] = json.dumps(filter_paper_form_data)
         model_lists_request = urllib2.Request("https://www.ekwing.com/exam/special/ajaxgetmodellist",
-                                              data=urllib.urlencode(get_paper_model_list_form_data),
+                                              data=urllib.urlencode(paper_model_list_form_data),
                                               headers=all_base_headers)
         model_lists_data = json.loads(opener.open(model_lists_request).read())
-        items_data_serialize(paper, model_lists_data)
+        items_data_serialize(paper, model_lists_data['data'])
 
 
-def items_data_serialize(current_paper, model_datas):
+def items_data_serialize(current_paper, data):
+    model_datas = data['model_list']
+    for model_id, model_data in model_datas.iteritems:
+
+
+
     pass
 
 
