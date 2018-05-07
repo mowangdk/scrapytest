@@ -43,7 +43,8 @@ def read_cookie_fromfile():
     req = urllib2.Request("https://www.ekwing.com/exam/special/papergenerate")
     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookie))
     response = opener.open(req)
-    print response.read()
+    with open('test.html', 'wb') as t:
+        t.write(response.read())
 
 
 if __name__ == '__main__':
