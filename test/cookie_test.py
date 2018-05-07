@@ -85,10 +85,7 @@ def read_cookie_fromfile():
 def items_data_serialize(current_paper, data):
     model_datas = data['model_list']
     for model_id, model_data in model_datas.iteritems:
-
-
-
-    pass
+        pass
 
 
 if __name__ == '__main__':
