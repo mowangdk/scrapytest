@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Time  :  2018/5/4 上午11:22
+
 import json
+import time
 import urllib
 import urllib2
 import cookielib
+
+from test.bean.model import Model
+from test.bean.paper import Paper
+from test.bean.question import Question
 
 
 def save_cookie():
@@ -80,12 +86,23 @@ def read_cookie_fromfile():
                                               headers=all_base_headers)
         model_lists_data = json.loads(opener.open(model_lists_request).read())
         items_data_serialize(paper, model_lists_data['data'])
+        break
 
 
 def items_data_serialize(current_paper, data):
     model_datas = data['model_list']
-    for model_id, model_data in model_datas.iteritems:
-        pass
+    paper = Paper(current_paper['id'], current_paper['title'],
+                  data['ques_info']['all'], data['total'], current_paper['year'])
+    for model_id, model_data in model_datas.iteritems():
+        model = Model(model_id, model_data['model_type'], model_data['model_type_name'],
+                      model_data['model_name'], model_data['_ques_num'], model_data['model_score'], model_data['listen_ori'], model_data['title_audio'])
+        # urllib.urlretrieve(model.title_audio, 'audio/{}.mp3'.format(model_id))
+        time.sleep(0.5)
+        for ques in model_data['ques_list']:
+            question = Question(ques['id'], ques['ques_index'], ques['ques_type'], ques['title_text'], ques['title_pic'], ques['answer'], ques['choose_list'])
+            model.ques_append(question)
+        paper.model_append(model)
+    paper.serialize()
 
 
 if __name__ == '__main__':
