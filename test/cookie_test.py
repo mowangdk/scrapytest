@@ -78,7 +78,8 @@ def read_cookie_fromfile():
     junor_response = json.loads(opener.open(paper_generate).read())
     paper_datas = junor_response['data']['paper_list']
     for paper in paper_datas:
-        paper_id = paper.get('id')
+        # paper_id = paper.get('id')
+        paper_id = '124795'
         paper_model_list_form_data['paper_id'] = str(paper_id)
         paper_model_list_form_data['search_params'] = json.dumps(filter_paper_form_data)
         model_lists_request = urllib2.Request("https://www.ekwing.com/exam/special/ajaxgetmodellist",
@@ -95,16 +96,16 @@ def items_data_serialize(current_paper, data):
                   data['ques_info']['all'], data['total'], current_paper['year'])
     for model_id, model_data in model_datas.iteritems():
         model = Model(model_id, model_data['model_type'], model_data['model_type_name'],
-                      model_data['model_name'], model_data['_ques_num'], model_data['model_score'], model_data['listen_ori'], model_data['title_audio'])
+                      model_data['model_name'], model_data.get('_ques_num', 1), model_data['model_score'], model_data.get('listen_ori', ''), model_data.get('title_audio', ''))
         # urllib.urlretrieve(model.title_audio, 'audio/{}.mp3'.format(model_id))
         time.sleep(0.5)
-        for ques in model_data['ques_list']:
-            question = Question(ques['id'], ques['ques_index'], ques['ques_type'], ques['title_text'], ques['title_pic'], ques['answer'], ques['choose_list'])
+        for ques in model_data.get('ques_list', []):
+            question = Question(ques['id'], ques.get('ques_index', 1), ques['ques_type'], ques['title_text'], ques['title_pic'], ques['answer'], ques.get('choose_list', []))
             model.ques_append(question)
         paper.model_append(model)
     paper.serialize()
 
 
 if __name__ == '__main__':
-    # save_cookie_tofile()
+    save_cookie_tofile()
     read_cookie_fromfile()
