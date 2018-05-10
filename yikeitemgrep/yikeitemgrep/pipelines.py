@@ -5,11 +5,21 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import hashlib
+import json
 from urllib import quote
 
 import pymongo
-import scrapy
 from scrapy.exceptions import DropItem
+
+
+class JsonWritePipeline(object):
+    def __init__(self):
+        self.file = open('item.json', 'wb')
+
+    def process_item(self, item, spider):
+        line = json.dumps(dict(item)) + '\n'
+        self.file.write(line)
+        return item
 
 
 class MongoPipeline(object):

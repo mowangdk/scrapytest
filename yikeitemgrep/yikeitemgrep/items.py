@@ -15,6 +15,17 @@ class PaperItem(scrapy.Item):
     paper_title = scrapy.Field()
 
 
+class Province(scrapy.Item):
+    id = scrapy.Field()
+    province_name = scrapy.Field()
+    city_ids = scrapy.Field()
+
+
+class City(scrapy.Item):
+    id = scrapy.Field()
+    city_name = scrapy.Field()
+
+
 if __name__ == '__main__':
     paper = PaperItem(paper_id='12345')
     print id(paper)
