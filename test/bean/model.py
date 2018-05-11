@@ -53,7 +53,7 @@ class Type7Model(object):
 
     def __str__(self):
         model_name = u'{}-{} \n'.format(self.model_id, self.model_type_name)
-        listen_ori = u'听力原文:    {} \n'.format(self.listen_ori)
         model_score = u'总分: {}'.format(self.model_score)
+
         ques_str = u'\n\t' + u'\n\t'.join(map(unicode, self.ques_list))
-        return u''.join([model_name, listen_ori, model_score, ques_str, u'\n'])
+        return u''.join([model_name, model_score, ques_str, u'\n'])
