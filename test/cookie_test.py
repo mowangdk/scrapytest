@@ -104,7 +104,6 @@ def items_data_serialize(current_paper, data):
             model = Type7Model(model_id, model_data['model_type'],
                                model_data['model_type_name'], model_data['model_name'], model_data['model_score'],
                                model_data['title'], model_data['title_ques_map'], model_data['chap_info'][0]['intro_text'])
-            pass
         else:
             model = Model(model_id, model_data['model_type'], model_data['model_type_name'],
                           model_data['model_name'], model_data.get('_ques_num', ''), model_data['model_score'], model_data.get('listen_ori', ''), model_data.get('title_audio', ''))
@@ -114,7 +113,7 @@ def items_data_serialize(current_paper, data):
             question = Question(ques['id'], ques.get('ques_index', 1), ques['ques_type'], ques['title_text'], ques['title_pic'], ques['answer'], ques.get('choose_list', []))
             model.ques_append(question)
         paper.model_append(model)
-    paper.serialize()
+    # paper.serialize()
 
 
 if __name__ == '__main__':
