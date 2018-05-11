@@ -89,3 +89,10 @@ ITEM_PIPELINES = {
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+FEED_FORMAT = 'json'
+FEED_EXPORTERS_BASE = {
+    'json': 'scrapy.exporters.JsonItemExporter',
+    'jsonlines': 'scrapy.exporters.JsonLinesItemExporter'
+}
+FEED_URI = "paper.json"

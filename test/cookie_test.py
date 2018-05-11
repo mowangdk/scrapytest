@@ -8,7 +8,7 @@ import urllib
 import urllib2
 import cookielib
 
-from test.bean.model import Model
+from test.bean.model import Model, Type1Model, Type7Model
 from test.bean.paper import Paper
 from test.bean.question import Question
 
@@ -79,7 +79,7 @@ def read_cookie_fromfile():
     paper_datas = junor_response['data']['paper_list']
     for paper in paper_datas:
         # paper_id = paper.get('id')
-        paper_id = '124795'
+        paper_id = '124797'
         paper_model_list_form_data['paper_id'] = str(paper_id)
         paper_model_list_form_data['search_params'] = json.dumps(filter_paper_form_data)
         model_lists_request = urllib2.Request("https://www.ekwing.com/exam/special/ajaxgetmodellist",
@@ -95,8 +95,19 @@ def items_data_serialize(current_paper, data):
     paper = Paper(current_paper['id'], current_paper['title'],
                   data['ques_info']['all'], data['total'], current_paper['year'])
     for model_id, model_data in model_datas.iteritems():
-        model = Model(model_id, model_data['model_type'], model_data['model_type_name'],
-                      model_data['model_name'], model_data.get('_ques_num', 1), model_data['model_score'], model_data.get('listen_ori', ''), model_data.get('title_audio', ''))
+        model_type = model_data['model_type']
+        if model_type == u'1':
+            model = Type1Model(model_id, model_data['model_type'],
+                               model_data['model_type_name'], model_data['model_name'], model_data['model_score'],
+                               model_data['real_text'], model_data['real_audio'], model_data['intro_text'])
+        elif model_type == u'7':
+            model = Type7Model(model_id, model_data['model_type'],
+                               model_data['model_type_name'], model_data['model_name'], model_data['model_score'],
+                               model_data['title'], model_data['title_ques_map'], model_data['chap_info'][0]['intro_text'])
+            pass
+        else:
+            model = Model(model_id, model_data['model_type'], model_data['model_type_name'],
+                          model_data['model_name'], model_data.get('_ques_num', ''), model_data['model_score'], model_data.get('listen_ori', ''), model_data.get('title_audio', ''))
         # urllib.urlretrieve(model.title_audio, 'audio/{}.mp3'.format(model_id))
         time.sleep(0.5)
         for ques in model_data.get('ques_list', []):

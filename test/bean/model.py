@@ -20,3 +20,19 @@ class Model(object):
         ques_str = u'\n\t' + u'\n\t'.join(map(unicode, self.ques_list))
         return u''.join([model_name, listen_ori, model_score, ques_str, u'\n'])
 
+
+class Type1Model(object):
+
+    def __init__(self, model_id, model_type, model_type_name, model_name, model_score, article_text,
+                 article_audio, intro_text):
+        self.__dict__.update({key: value for key, value in locals().iteritems() if key != 'self'})
+        self.ques_list = list()
+
+
+class Type7Model(object):
+
+    def __init__(self, model_id, model_type, model_type_name, model_name, model_score, model_ques_title,
+                 model_ques_title_map, intro_text):
+        self.__dict__.update({key: value for key, value in locals().iteritems() if key != 'self'})
+        self.ques_list = list()
+

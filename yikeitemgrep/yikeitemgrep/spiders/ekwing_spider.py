@@ -12,7 +12,7 @@ from scrapy import Request, Spider
 from scrapy.http.cookies import CookieJar
 
 # scrapy 项目处于pycharm项目的子项目， 所以pycharm找不到items， 解决方法是， scrapy项目上右键 --> make_directory_as --> sources root
-from yikeitemgrep.items import Province, City, PaperItem
+from yikeitemgrep.items import Province, City, PaperItem, ModelItem
 
 cookie_jar = CookieJar()
 
@@ -124,7 +124,7 @@ class EkwingSpider(Spider):
                                          formdata=get_paper_models_form,
                                          headers=self.base_paper_pages_header,
                                          cookies=login_cookie,
-                                         callback=self.get_all_items_by_paper_id)
+                                         callback=self.get_all_model_by_paper_id)
                 break
 
     @staticmethod
@@ -135,7 +135,7 @@ class EkwingSpider(Spider):
         response = opener.open("https://passport.ekwing.com/index/login?callback=jQuery172028761594192983286_1525513573276&uname=78240037&pw=pjGwaDtMogr0lrFNPjmE9i7wiVGq4P1%2B0iiRVtrx6bvLK1YSvoth1LOGmxSAuGow3qcYP7HZZZ3E1ToVqvus0OVhLHb8orlGMTCNtdmd8YW6RUSKxOkY7516CQX2KrzuIpKrzZXtrMxN8HYFBBzEEnCX1hvgVDttpI8OBDrJmbI%3D&client_type=web&encrypt_key=3ffb3a92f1c4d3a388d9e00e707636a3&encrypt_type=rsa&utype=1&mem_type=2&_=1525513788306")
         return opener
 
-    def get_all_items_by_paper_id(self, response):
+    def get_all_model_by_paper_id(self, response):
         paper_body = json.loads(response.body)
         body_data = paper_body['data']
         model_datas = body_data['model_list']
@@ -145,7 +145,37 @@ class EkwingSpider(Spider):
                                    all_question_count=paper_body['data'])
 
         for model_id, model_data in model_datas.iteritems():
-            pass
+            model_instance = ModelItem(id=model_id,
+                                       model_score=model_data['model_score'],
+                                       model_type=model_data['model_type'],
+                                       model_type_name=model_data['model_type_name'],
+                                       model_name=model_data['model_name'])
+            if 'chap_info' in model_data and model_instance['model_type'] != u'204':
+                model_instance['intro_text'] = model_data['chap_info'][0]['intro_text']
+                model_instance['intro_audio'] = model_data['chap_info'][0]['intro_audio']
+            if model_instance['model_type'] == u'7':
+                model_instance['model_ques_title'] = model_data['title']
+                model_instance['title_ques_map'] = model_data['title_ques_map']
+                model_instance['title_prepare_time'] = model_data['prepare_time']
+            elif model_instance['model_type'] == u'1':
+                model_instance['article_text'] = model_data['real_text']
+                model_instance['article_audio'] = model_data['real_audio']
+            elif model_instance['model_type'] == u'204':
+                continue
+            else:
+                model_instance['question_num'] = model_data['_ques_num']
+                model_instance['listen_ori'] = model_data['listen_ori']
+                model_instance['title_audio'] = model_data['title_audio']
+            yield model_instance
+
+
+
+
+
+
+
+
+
 
 
 
