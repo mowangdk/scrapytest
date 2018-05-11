@@ -26,7 +26,8 @@ class EkwingSpider(Spider):
     def __init__(self, *args, **kwargs):
         self.province_dict = dict()
         self.base_paper_pages_header = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6',
-                                        'Referer': 'https://www.ekwing.com/exam/special/papergenerate'}
+                                        'Referer': 'https://www.ekwing.com/exam/special/papergenerate',
+                                        'Content-Type': 'application/x-www-form-urlencoded; multipart/form-data'}
         super(EkwingSpider, self).__init__(*args, **kwargs)
 
     def start_requests(self):
@@ -42,7 +43,10 @@ class EkwingSpider(Spider):
             for cookie in cookie_jars:
                 f.write(str(cookie) + '\n')
 
-        filter_paper_form_data = {"publish_type": 0, "grade": 0, "grade_type": 3, "special_type": 2, "province_id": 107, "exam_type": 1, "level": 0, "model_type_publish": -1, "paper_type": 0, "ext[name_id]": None, "client_type": 0, "paper_year": 0, "province_name": "\\u7ffc\\u8bfe\\u7f51"}
+        filter_paper_form_data = {"publish_type": 0, "grade": 0, "grade_type": 3, "special_type": 2,
+                                  "province_id": 107, "exam_type": 1, "level": 0, "model_type_publish": -1,
+                                  "paper_type": 0, "ext[name_id]": None, "client_type": 0, "paper_year": 0,
+                                  "province_name": "\u7ffc\u8bfe\u7f51"}
         get_paper_models_form = {
             'page_from': 'special',
             'paper_id': '101804',
@@ -50,12 +54,12 @@ class EkwingSpider(Spider):
         }
 
         login_cookie = self.load_cookies()
-        yield scrapy.FormRequest("https://www.ekwing.com/exam/special/ajaxgetmodellist",
-                                 method="POST",
-                                 formdata=get_paper_models_form,
-                                 headers=self.base_paper_pages_header,
-                                 cookies=login_cookie,
-                                 callback=self.get_paper)
+        yield scrapy.Request("https://www.ekwing.com/exam/special/ajaxgetmodellist",
+                             method="POST",
+                             body=urllib.urlencode(get_paper_models_form),
+                             headers=self.base_paper_pages_header,
+                             cookies=login_cookie,
+                             callback=self.get_paper)
 
     @staticmethod
     def load_cookies():

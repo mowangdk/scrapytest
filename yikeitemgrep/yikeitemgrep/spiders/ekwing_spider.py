@@ -12,7 +12,7 @@ from scrapy import Request, Spider
 from scrapy.http.cookies import CookieJar
 
 # scrapy 项目处于pycharm项目的子项目， 所以pycharm找不到items， 解决方法是， scrapy项目上右键 --> make_directory_as --> sources root
-from yikeitemgrep.items import Province, City
+from yikeitemgrep.items import Province, City, PaperItem
 
 cookie_jar = CookieJar()
 
@@ -89,16 +89,14 @@ class EkwingSpider(Spider):
         self.province_dict.update({int(province_data['id']): province_data['name'] for i in region_response['data']['group_list'] for province_data in i['list']})
         login_cookie = self.load_cookies()
         print self.province_dict.keys()
-        for province_id in self.province_dict.keys():
-            datas = urllib.urlencode({'load_city': 1, 'page_from': 'special', 'province_id': province_id, 'mod': '1525936652656'})
-            yield scrapy.Request("https://www.ekwing.com/exam/review/loadmodcity?" + datas,
-                                 method="GET",
-                                 headers=self.base_paper_pages_header,
-                                 cookies=login_cookie,
-                                 callback=self.save_all_province_city)
+        # for province_id in self.province_dict.keys():
+        #     datas = urllib.urlencode({'load_city': 1, 'page_from': 'special', 'province_id': province_id, 'mod': '1525936652656'})
+        #     yield scrapy.Request("https://www.ekwing.com/exam/review/loadmodcity?" + datas,
+        #                          method="GET",
+        #                          headers=self.base_paper_pages_header,
+        #                          cookies=login_cookie,
+        #                          callback=self.save_all_province_city)
         get_paper_models_form = {
-            'model_type': 'null',
-            'page': 1,
             'page_from': 'special',
         }
         for province_id, province_name in self.province_dict.iteritems():
@@ -107,12 +105,10 @@ class EkwingSpider(Spider):
                 'client_type': 0, 'exam_type': 1, 'ext[name_id]': None, 'grade': 0, 'grade_type': 3, 'level': 0,
                 'model_type_publish': -1, 'paper_type': 0, 'paper_year': 0, 'publish_type': 0, 'special_type': 2
             }
-            filter_paper_form_data = {"publish_type": 0, "grade": 0, "grade_type": 3, "special_type": 2, "province_id": 107, "exam_type": 1,
-             "level": 0, "model_type_publish": -1, "paper_type": 0, "ext[name_id]": 'null', "client_type": 0,
-             "paper_year": 0, "province_name": "\u7ffc\u8bfe\u7f51"}
             # 这里有一个问题， 不知道为什么用scrapy.Request发送的请求正常，
             # 但是返回的数据response里面的requestr的province_id 自动变成了0， 导致返回的数据中没有paper_list
             # 目前推测是cookie少了一个key(并不是), 经测试， scrapy发送post请求需要调用FormRequest方法， 单独使用request会导致参数错误？
+            # 推测可能是urllib.urlencode编码过的body参数多了一些东西，scrapy无法解码, 详情见test_spider
             opener = self.urllib2_opener()
             paper_generate = urllib2.Request("https://www.ekwing.com/exam/special/ajaxpapergenerate",
                                              data=urllib.urlencode(filter_paper_form_data),
@@ -121,16 +117,15 @@ class EkwingSpider(Spider):
             paper_datas = paper_id_response['data']['paper_list']
             for paper in paper_datas:
                 paper_id = paper.get('id')
-                paper_id = '101804'
-                get_paper_models_form['paper_id'] = int(paper_id)
+                paper_id = '124797'
+                get_paper_models_form['paper_id'] = paper_id
                 get_paper_models_form['search_params'] = json.dumps(filter_paper_form_data)
-                yield scrapy.Request("https://www.ekwing.com/exam/special/ajaxgetmodellist",
-                                     method="POST",
-                                     body=urllib.urlencode(get_paper_models_form),
-                                     headers=self.base_paper_pages_header,
-                                     cookies=login_cookie,
-                                     callback=self.get_all_items_by_paper_id)
-
+                yield scrapy.FormRequest("https://www.ekwing.com/exam/special/ajaxgetmodellist",
+                                         formdata=get_paper_models_form,
+                                         headers=self.base_paper_pages_header,
+                                         cookies=login_cookie,
+                                         callback=self.get_all_items_by_paper_id)
+                break
 
     @staticmethod
     def urllib2_opener():
@@ -142,5 +137,15 @@ class EkwingSpider(Spider):
 
     def get_all_items_by_paper_id(self, response):
         paper_body = json.loads(response.body)
-        pass
+        body_data = paper_body['data']
+        model_datas = body_data['model_list']
+        paper_instance = PaperItem(id=body_data['base_info']['paper_id'],
+                                   paper_title=body_data['title'],
+                                   all_model_count=body_data['total'],
+                                   all_question_count=paper_body['data'])
+
+        for model_id, model_data in model_datas.iteritems():
+            pass
+
+
 
