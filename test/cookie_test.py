@@ -8,7 +8,7 @@ import urllib
 import urllib2
 import cookielib
 
-from test.bean.model import Model, Type1Model, Type7Model
+from test.bean.model import Model, Type1Model, Type7Model, Type204Model
 from test.bean.paper import Paper
 from test.bean.question import Question
 
@@ -79,21 +79,21 @@ def read_cookie_fromfile():
     paper_datas = junor_response['data']['paper_list']
     for paper in paper_datas:
         # paper_id = paper.get('id')
-        paper_id = '124797'
+        paper_id = '103410'
         paper_model_list_form_data['paper_id'] = str(paper_id)
         paper_model_list_form_data['search_params'] = json.dumps(filter_paper_form_data)
         model_lists_request = urllib2.Request("https://www.ekwing.com/exam/special/ajaxgetmodellist",
                                               data=urllib.urlencode(paper_model_list_form_data),
                                               headers=all_base_headers)
         model_lists_data = json.loads(opener.open(model_lists_request).read())
-        items_data_serialize(paper, model_lists_data['data'])
+        items_data_serialize(model_lists_data['data'])
         break
 
 
-def items_data_serialize(current_paper, data):
+def items_data_serialize(data):
     model_datas = data['model_list']
-    paper = Paper(current_paper['id'], current_paper['title'],
-                  data['ques_info']['all'], data['total'], current_paper['year'])
+    paper = Paper(data['base_info']['paper_id'], data['title'],
+                  data['ques_info']['all'], data['total'])
     for model_id, model_data in model_datas.iteritems():
         model_type = model_data['model_type']
         if model_type == u'1':
@@ -103,17 +103,21 @@ def items_data_serialize(current_paper, data):
         elif model_type == u'7':
             model = Type7Model(model_id, model_data['model_type'],
                                model_data['model_type_name'], model_data['model_name'], model_data['model_score'],
-                               model_data['title'], model_data['title_ques_map'], model_data['chap_info'][0]['intro_text'])
+                               model_data['title'], model_data['title_ques_map'])
+        elif model_type == u'204':
+            model = Type204Model(model_id, model_data['model_type'],
+                               model_data['model_type_name'], model_data['model_name'], model_data['model_score'],
+                               model_data['title_text'], model_data['chap_info'])
         else:
             model = Model(model_id, model_data['model_type'], model_data['model_type_name'],
                           model_data['model_name'], model_data.get('_ques_num', ''), model_data['model_score'], model_data.get('listen_ori', ''), model_data.get('title_audio', ''))
         # urllib.urlretrieve(model.title_audio, 'audio/{}.mp3'.format(model_id))
         time.sleep(0.5)
         for ques in model_data.get('ques_list', []):
-            question = Question(ques['id'], ques.get('ques_index', 1), ques['ques_type'], ques['title_text'], ques['title_pic'], ques['answer'], ques.get('choose_list', []))
+            question = Question(ques['id'], ques.get('ques_index', ques.get('bt_id')), ques['ques_type'], ques['title_text'], ques['title_pic'], ques['answer'], ques.get('choose_list', []))
             model.ques_append(question)
         paper.model_append(model)
-    # paper.serialize()
+    paper.serialize()
 
 
 if __name__ == '__main__':

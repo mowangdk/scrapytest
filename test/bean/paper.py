@@ -6,7 +6,7 @@ import codecs
 
 class Paper(object):
 
-    def __init__(self, paper_id, title, total_question_count, total_model_count, year):
+    def __init__(self, paper_id, title, total_question_count, total_model_count):
         self.__dict__.update({key: value for key, value in locals().iteritems() if key != 'self'})
         self.module_list = list()
 
