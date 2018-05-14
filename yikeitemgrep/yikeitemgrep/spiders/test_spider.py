@@ -38,10 +38,10 @@ class EkwingSpider(Spider):
 
     def check_login(self, response):
         # 使用extract_cookies方法可以提取response中的cookie
-        cookie_jars.extract_cookies(response, response.request)
-        with open('cookie.txt', 'w') as f:
-            for cookie in cookie_jars:
-                f.write(str(cookie) + '\n')
+        # cookie_jars.extract_cookies(response, response.request)
+        # with open('cookie.txt', 'w') as f:
+        #     for cookie in cookie_jars:
+        #         f.write(str(cookie) + '\n')
 
         filter_paper_form_data = {"publish_type": 0, "grade": 0, "grade_type": 3, "special_type": 2,
                                   "province_id": 107, "exam_type": 1, "level": 0, "model_type_publish": -1,
@@ -53,14 +53,14 @@ class EkwingSpider(Spider):
             'search_params': json.dumps(filter_paper_form_data)
         }
 
-        login_cookie = self.load_cookies()
+        # login_cookie = self.load_cookies()
         yield scrapy.Request("https://www.ekwing.com/exam/special/ajaxgetmodellist",
                              method="POST",
                              body=urllib.urlencode(get_paper_models_form),
                              headers=self.base_paper_pages_header,
-                             cookies=login_cookie,
                              callback=self.get_paper)
 
+    # Scrapy 可以自动管理cookies， 在之后的请求会发送回去， 就像正常的网页浏览器做的那样
     @staticmethod
     def load_cookies():
         with open('cookie.txt', 'r') as f:
