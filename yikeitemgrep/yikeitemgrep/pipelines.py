@@ -12,16 +12,6 @@ import pymongo
 from scrapy.exceptions import DropItem
 
 
-class JsonWritePipeline(object):
-    def __init__(self):
-        self.file = open('item.json', 'wb')
-
-    def process_item(self, item, spider):
-        line = json.dumps(dict(item)) + '\n'
-        self.file.write(line)
-        return item
-
-
 class MongoPipeline(object):
 
     collection_name = 'scrapy_items'

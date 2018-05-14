@@ -40,20 +40,25 @@ class EkwingSpider(Spider):
         ]
 
     def check_login(self, response):
+        """
+        :param response:
+        :return:
+        @url https://passport.ekwing.com/index/login
+        @returns items 1 14
+        """
         # 使用extract_cookies方法可以提取response中的cookie
-        cookie_jar.extract_cookies(response, response.request)
-        with open('cookie.txt', 'w') as f:
-            for cookie in cookie_jar:
-                f.write(str(cookie) + '\n')
-
-        login_cookie = self.load_cookies()
+        # cookie_jar.extract_cookies(response, response.request)
+        # with open('cookie.txt', 'w') as f:
+        #     for cookie in cookie_jar:
+        #         f.write(str(cookie) + '\n')
+        #
+        # login_cookie = self.load_cookies()
         yield scrapy.Request("https://www.ekwing.com/exam/review/loadmodcity",
                              method="POST",
                              body=urllib.urlencode({'city_id': 1495,
                                                     'page_from': 'special',
                                                     'province_id': 107}),
                              headers=self.base_paper_pages_header,
-                             cookies=login_cookie,
                              callback=self.get_all_province)
 
     @staticmethod
@@ -80,11 +85,6 @@ class EkwingSpider(Spider):
 
     def get_all_province(self, response):
 
-        # 这里有新加的cookie所以重新获取一遍
-        cookie_jar.extract_cookies(response, response.request)
-        with open('cookie.txt', 'wr') as f:
-            for cookie in cookie_jar:
-                f.write(str(cookie) + '\n')
         region_response = json.loads(response.body)
         self.province_dict.update({int(province_data['id']): province_data['name'] for i in region_response['data']['group_list'] for province_data in i['list']})
         login_cookie = self.load_cookies()

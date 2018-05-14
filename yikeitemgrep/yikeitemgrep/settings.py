@@ -66,8 +66,10 @@ COOKIES_ENABLED = True
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     'yikeitemgrep.pipelines.DuplicatesPipeline': 100,
-    'yikeitemgrep.pipelines.JsonWritePipeline': 300,
+    'scrapy.contrib.pipeline.images.ImagesPipeline': 400
 }
+
+IMAGES_STORE = 'item_images/'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
