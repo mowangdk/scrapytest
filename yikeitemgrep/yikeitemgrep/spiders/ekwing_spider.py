@@ -3,7 +3,6 @@
 # @Time  :  2018/5/7 上午11:35
 import cookielib
 import json
-import re
 import urllib
 import urllib2
 
@@ -23,14 +22,12 @@ class EkwingSpider(Spider):
 
     headers = {
         "Accept": "*/*",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36",
         "Referer": "www.ekwing.com/login/view"
     }
 
     def __init__(self, *args, **kwargs):
         self.province_dict = dict()
-        self.base_paper_pages_header = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6',
-                                        'Referer': 'https://www.ekwing.com/exam/special/papergenerate'}
+        self.base_paper_pages_header = {'Referer': 'https://www.ekwing.com/exam/special/papergenerate'}
         super(EkwingSpider, self).__init__(*args, **kwargs)
 
     def start_requests(self):
@@ -46,13 +43,6 @@ class EkwingSpider(Spider):
         @url https://passport.ekwing.com/index/login
         @returns items 1 14
         """
-        # 使用extract_cookies方法可以提取response中的cookie
-        # cookie_jar.extract_cookies(response, response.request)
-        # with open('cookie.txt', 'w') as f:
-        #     for cookie in cookie_jar:
-        #         f.write(str(cookie) + '\n')
-        #
-        # login_cookie = self.load_cookies()
         yield scrapy.Request("https://www.ekwing.com/exam/review/loadmodcity",
                              method="POST",
                              body=urllib.urlencode({'city_id': 1495,
@@ -60,15 +50,6 @@ class EkwingSpider(Spider):
                                                     'province_id': 107}),
                              headers=self.base_paper_pages_header,
                              callback=self.get_all_province)
-
-    @staticmethod
-    def load_cookies():
-        with open('cookie.txt', 'r') as f:
-            cookie_jar = f.read()
-            p = re.compile(r'<Cookie (.*?) for .*?>')
-            cookies = re.findall(p, cookie_jar)
-            cookies = dict(cookie.split('=', 1) for cookie in cookies)
-            return cookies
 
     def save_all_province_city(self, response):
         city_response = json.loads(response.body)
@@ -87,15 +68,13 @@ class EkwingSpider(Spider):
 
         region_response = json.loads(response.body)
         self.province_dict.update({int(province_data['id']): province_data['name'] for i in region_response['data']['group_list'] for province_data in i['list']})
-        login_cookie = self.load_cookies()
         print self.province_dict.keys()
-        # for province_id in self.province_dict.keys():
-        #     datas = urllib.urlencode({'load_city': 1, 'page_from': 'special', 'province_id': province_id, 'mod': '1525936652656'})
-        #     yield scrapy.Request("https://www.ekwing.com/exam/review/loadmodcity?" + datas,
-        #                          method="GET",
-        #                          headers=self.base_paper_pages_header,
-        #                          cookies=login_cookie,
-        #                          callback=self.save_all_province_city)
+        for province_id in self.province_dict.keys():
+            datas = urllib.urlencode({'load_city': 1, 'page_from': 'special', 'province_id': province_id, 'mod': '1525936652656'})
+            yield scrapy.Request("https://www.ekwing.com/exam/review/loadmodcity?" + datas,
+                                 method="GET",
+                                 headers=self.base_paper_pages_header,
+                                 callback=self.save_all_province_city)
         get_paper_models_form = {
             'page_from': 'special',
         }
@@ -123,7 +102,6 @@ class EkwingSpider(Spider):
                 yield scrapy.FormRequest("https://www.ekwing.com/exam/special/ajaxgetmodellist",
                                          formdata=get_paper_models_form,
                                          headers=self.base_paper_pages_header,
-                                         cookies=login_cookie,
                                          callback=self.get_all_model_by_paper_id)
                 break
 
@@ -150,9 +128,6 @@ class EkwingSpider(Spider):
                                        model_type=model_data['model_type'],
                                        model_type_name=model_data['model_type_name'],
                                        model_name=model_data['model_name'])
-            if 'chap_info' in model_data and model_instance['model_type'] != u'204':
-                model_instance['intro_text'] = model_data['chap_info'][0]['intro_text']
-                model_instance['intro_audio'] = model_data['chap_info'][0]['intro_audio']
             if model_instance['model_type'] == u'7':
                 model_instance['model_ques_title'] = model_data['title']
                 model_instance['title_ques_map'] = model_data['title_ques_map']
@@ -160,22 +135,15 @@ class EkwingSpider(Spider):
             elif model_instance['model_type'] == u'1':
                 model_instance['article_text'] = model_data['real_text']
                 model_instance['article_audio'] = model_data['real_audio']
+                model_instance['intro_text'] = model_data['intro_text']
+                model_instance['intro_audio'] = model_data['intro_audio']
             elif model_instance['model_type'] == u'204':
                 continue
             else:
                 model_instance['question_num'] = model_data['_ques_num']
                 model_instance['listen_ori'] = model_data['listen_ori']
                 model_instance['title_audio'] = model_data['title_audio']
+            for question in model_data.get('ques_list', []):
+                pass
             yield model_instance
-
-
-
-
-
-
-
-
-
-
-
 

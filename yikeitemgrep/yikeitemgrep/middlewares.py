@@ -4,8 +4,21 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
+import random
 
 from scrapy import signals
+
+from yikeitemgrep.user_agent import agents
+
+
+class UserAgentMiddleware(object):
+    """
+    换User-Agent
+    """
+
+    def process_request(self, request, spider):
+        agent = random.choice(agents)
+        request.headers["User-Agent"] = agent
 
 
 class YikeitemgrepSpiderMiddleware(object):

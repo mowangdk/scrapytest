@@ -27,6 +27,8 @@ class ModelItem(scrapy.Item):
     listen_ori = scrapy.Field()
     title_audio = scrapy.Field()
     question_num = scrapy.Field()
+    image_urls = scrapy.Field()
+    images = scrapy.Field()
     # part 一个部分可能包括多个小题, 现放到这里了
     model_ques_title = scrapy.Field()
     title_ques_map = scrapy.Field()
@@ -37,6 +39,12 @@ class ModelItem(scrapy.Item):
     # 朗读题的原文和音频
     article_text = scrapy.Field()
     article_audio = scrapy.Field()
+
+
+class QuestionItem(scrapy.Item):
+    id = scrapy.Field()
+    image_urls = scrapy.Field()
+    images = scrapy.Field()
 
 
 class Province(scrapy.Item):

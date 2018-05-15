@@ -71,6 +71,10 @@ ITEM_PIPELINES = {
 
 IMAGES_STORE = 'item_images/'
 
+DOWNLOADER_MIDDLEWARES = {
+    "yikeitemgrep.middlewares.UserAgentMiddleware": 100
+}
+
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True
