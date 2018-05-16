@@ -4,11 +4,11 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-import hashlib
-import json
-from urllib import quote
-
+import random
 import pymongo
+from scrapy import log
+
+from proxy import PROXIES
 from scrapy.exceptions import DropItem
 
 
@@ -50,3 +50,27 @@ class DuplicatesPipeline(object):
         else:
             self.ids_seen.add(item['id'])
             return item
+
+
+class CustomHttpProxyMiddleware(object):
+
+    def process_request(self, request, spider):
+        # TODO implement complex proxy providing algorithm
+        if self.use_proxy(request):
+            p = random.choice(PROXIES)
+            try:
+                request.meta['proxy'] = "http://%s" % p['ip_port']
+            except Exception, e:
+                log.msg("Exception %s" % e, _level=log.CRITICAL)
+
+    def use_proxy(self, request):
+        """
+        using direct download for depth <= 2
+        using proxy with probability 0.3
+        :param request:
+        :return:
+        """
+        if "depth" in request.meta and int(request.meta['depth']) <= 2:
+            return False
+        i = random.randint(1, 10)
+        return i <= 2

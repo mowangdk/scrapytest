@@ -69,10 +69,15 @@ ITEM_PIPELINES = {
     'scrapy.contrib.pipeline.images.ImagesPipeline': 400
 }
 
+
+MONGO_URI = ''
+MONGO_DATABASE = ''
+
 IMAGES_STORE = 'item_images/'
 
 DOWNLOADER_MIDDLEWARES = {
-    "yikeitemgrep.middlewares.UserAgentMiddleware": 100
+    "yikeitemgrep.middlewares.CustomHttpProxyMiddleware": 111,
+    "yikeitemgrep.middlewares.UserAgentMiddleware": 201
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
