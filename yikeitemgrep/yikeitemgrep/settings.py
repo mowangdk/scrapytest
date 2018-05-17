@@ -66,17 +66,15 @@ COOKIES_ENABLED = True
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     'yikeitemgrep.pipelines.DuplicatesPipeline': 100,
-    'scrapy.contrib.pipeline.images.ImagesPipeline': 400
+    # 'scrapy.contrib.pipeline.images.ImagesPipeline': 400,
+    'yikeitemgrep.pipelines.MongoPipeline': 500,
 }
 
-
-MONGO_URI = ''
-MONGO_DATABASE = ''
 
 IMAGES_STORE = 'item_images/'
 
 DOWNLOADER_MIDDLEWARES = {
-    "yikeitemgrep.middlewares.CustomHttpProxyMiddleware": 111,
+    # "yikeitemgrep.middlewares.CustomHttpProxyMiddleware": 111,
     "yikeitemgrep.middlewares.UserAgentMiddleware": 201
 }
 
@@ -101,9 +99,9 @@ DOWNLOADER_MIDDLEWARES = {
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
-FEED_FORMAT = 'json'
-FEED_EXPORTERS_BASE = {
-    'json': 'scrapy.exporters.JsonItemExporter',
-    'jsonlines': 'scrapy.exporters.JsonLinesItemExporter'
-}
-FEED_URI = "paper.json"
+# FEED_FORMAT = 'json'
+# FEED_EXPORTERS_BASE = {
+#     'json': 'scrapy.exporters.JsonItemExporter',
+#     'jsonlines': 'scrapy.exporters.JsonLinesItemExporter'
+# }
+# FEED_URI = "paper.json"

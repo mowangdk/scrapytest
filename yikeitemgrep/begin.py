@@ -6,4 +6,4 @@
 from scrapy import cmdline
 
 
-cmdline.execute("scrapy crawl ekwing".split())
+cmdline.execute("scrapy crawl ekwing ".split())

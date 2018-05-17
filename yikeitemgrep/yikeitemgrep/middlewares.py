@@ -6,8 +6,9 @@
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 import random
 
-from scrapy import signals
+from scrapy import signals, log
 
+from yikeitemgrep.proxy import PROXIES
 from yikeitemgrep.user_agent import agents
 
 
@@ -114,3 +115,27 @@ class YikeitemgrepDownloaderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+class CustomHttpProxyMiddleware(object):
+
+    def process_request(self, request, spider):
+        # TODO implement complex proxy providing algorithm
+        if self.use_proxy(request):
+            p = random.choice(PROXIES)
+            try:
+                request.meta['proxy'] = "http://%s" % p['ip_port']
+            except Exception, e:
+                log.msg("Exception %s" % e, _level=log.CRITICAL)
+
+    def use_proxy(self, request):
+        """
+        using direct download for depth <= 2
+        using proxy with probability 0.3
+        :param request:
+        :return:
+        """
+        if "depth" in request.meta and int(request.meta['depth']) <= 2:
+            return False
+        i = random.randint(1, 10)
+        return i <= 2

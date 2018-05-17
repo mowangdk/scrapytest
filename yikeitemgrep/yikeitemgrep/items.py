@@ -11,7 +11,7 @@ import scrapy
 class PaperItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    id = scrapy.Field()
+    origin_id = scrapy.Field()
     paper_title = scrapy.Field()
     all_question_count = scrapy.Field()
     all_model_count = scrapy.Field()
@@ -19,7 +19,7 @@ class PaperItem(scrapy.Item):
 
 
 class ModelItem(scrapy.Item):
-    id = scrapy.Field()
+    origin_id = scrapy.Field()
     model_type = scrapy.Field()
     model_type_name = scrapy.Field()
     model_name = scrapy.Field()
@@ -39,22 +39,17 @@ class ModelItem(scrapy.Item):
     # 朗读题的原文和音频
     article_text = scrapy.Field()
     article_audio = scrapy.Field()
-
-
-class QuestionItem(scrapy.Item):
-    id = scrapy.Field()
-    image_urls = scrapy.Field()
-    images = scrapy.Field()
+    questions = scrapy.Field()
 
 
 class Province(scrapy.Item):
-    id = scrapy.Field()
+    origin_id = scrapy.Field()
     province_name = scrapy.Field()
     city_ids = scrapy.Field()
 
 
 class City(scrapy.Item):
-    id = scrapy.Field()
+    origin_id = scrapy.Field()
     city_name = scrapy.Field()
 
 

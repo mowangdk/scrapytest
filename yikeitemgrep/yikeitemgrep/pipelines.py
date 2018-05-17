@@ -4,37 +4,45 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-import random
 import pymongo
+from bson import InvalidDocument
 from scrapy import log
-
-from proxy import PROXIES
 from scrapy.exceptions import DropItem
+
+from yikeitemgrep.items import PaperItem, ModelItem
 
 
 class MongoPipeline(object):
 
-    collection_name = 'scrapy_items'
+    def __init__(self):
+        client = pymongo.MongoClient('10.200.2.212', 27017)
+        db = client['ekwing']
+        self.paper = db['zy_papers']
+        self.model = db['zy_models']
 
-    def __init__(self, mongo_uri, mongo_db):
-        self.mongo_uri = mongo_uri
-        self.mongo_db = mongo_db
 
-    @classmethod
-    def from_crawler(cls, crawler):
-        return cls(mongo_uri=crawler.settings.get("MONGO_URI"),
-                   mongo_db=crawler.settings.get("MONGO_DATABASE", "items"))
-
-    def open_spider(self, spider):
-        self.client = pymongo.MongoClient(self.mongo_uri)
-        self.db = self.client[self.mongo_db]
-
-    def close_spider(self, spider):
-        self.client.close()
+    # @classmethod
+    # def from_crawler(cls, crawler):
+    #     return cls(mongo_uri=crawler.settings.get("MONGO_URI"),
+    #                mongo_db=crawler.settings.get("MONGO_DATABASE", "items"))
+    #
+    # def open_spider(self, spider):
+    #     self.client = pymongo.MongoClient(self.mongo_uri)
+    #     self.db = self.client[self.mongo_db]
+    #
+    # def close_spider(self, spider):
+    #     self.client.close()
 
     def process_item(self, item, spider):
-        self.db[self.collection_name].insert(dict(item))
-        return item
+        try:
+            if isinstance(item, PaperItem):
+                self.paper.insert(dict(item))
+            elif isinstance(item, ModelItem):
+                self.model.insert(dict(item))
+            return item
+        except InvalidDocument as e:
+            log.msg('show items : {}'.format(item))
+
 
 
 # item 去重
@@ -45,32 +53,11 @@ class DuplicatesPipeline(object):
         self.ids_seen = set()
 
     def process_item(self, item, spider):
-        if item['id'] in self.ids_seen:
-            raise DropItem("Duplicate item found: %s" % item)
+        if item['origin_id'] in self.ids_seen:
+            pass
+            # raise DropItem("Duplicate item found: %s" % item)
         else:
-            self.ids_seen.add(item['id'])
+            self.ids_seen.add(item['origin_id'])
             return item
 
 
-class CustomHttpProxyMiddleware(object):
-
-    def process_request(self, request, spider):
-        # TODO implement complex proxy providing algorithm
-        if self.use_proxy(request):
-            p = random.choice(PROXIES)
-            try:
-                request.meta['proxy'] = "http://%s" % p['ip_port']
-            except Exception, e:
-                log.msg("Exception %s" % e, _level=log.CRITICAL)
-
-    def use_proxy(self, request):
-        """
-        using direct download for depth <= 2
-        using proxy with probability 0.3
-        :param request:
-        :return:
-        """
-        if "depth" in request.meta and int(request.meta['depth']) <= 2:
-            return False
-        i = random.randint(1, 10)
-        return i <= 2

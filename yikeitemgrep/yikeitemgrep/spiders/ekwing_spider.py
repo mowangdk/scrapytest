@@ -57,24 +57,24 @@ class EkwingSpider(Spider):
         province_name = self.province_dict[province_id]
         all_city_ids = list()
         for city in city_response['data']['city_list']:
-            city_instance = City(id=city['id'], city_name=city['name'])
+            city_instance = City(origin_id=city['id'], city_name=city['name'])
             all_city_ids.append(city['id'])
             yield city_instance
 
-        province_instance = Province(id=province_id, province_name=province_name, city_ids=all_city_ids)
+        province_instance = Province(origin_id=province_id, province_name=province_name, city_ids=all_city_ids)
         yield province_instance
 
     def get_all_province(self, response):
 
         region_response = json.loads(response.body)
         self.province_dict.update({int(province_data['id']): province_data['name'] for i in region_response['data']['group_list'] for province_data in i['list']})
-        print self.province_dict.keys()
-        for province_id in self.province_dict.keys():
-            datas = urllib.urlencode({'load_city': 1, 'page_from': 'special', 'province_id': province_id, 'mod': '1525936652656'})
-            yield scrapy.Request("https://www.ekwing.com/exam/review/loadmodcity?" + datas,
-                                 method="GET",
-                                 headers=self.base_paper_pages_header,
-                                 callback=self.save_all_province_city)
+        # for province_id in self.province_dict.keys():
+        #     datas = urllib.urlencode({'load_city': 1, 'page_from': 'special', 'province_id': province_id, 'mod': '1525936652656'})
+        #     yield scrapy.Request("https://www.ekwing.com/exam/review/loadmodcity?" + datas,
+        #                          method="GET",
+        #                          headers=self.base_paper_pages_header,
+        #                          callback=self.save_all_province_city
+        #                          )
         get_paper_models_form = {
             'page_from': 'special',
         }
@@ -94,16 +94,17 @@ class EkwingSpider(Spider):
                                              headers=self.base_paper_pages_header)
             paper_id_response = json.loads(opener.open(paper_generate).read())
             paper_datas = paper_id_response['data']['paper_list']
-            for paper in paper_datas:
+            for index, paper in enumerate(paper_datas):
                 paper_id = paper.get('id')
-                paper_id = '124797'
                 get_paper_models_form['paper_id'] = paper_id
                 get_paper_models_form['search_params'] = json.dumps(filter_paper_form_data)
                 yield scrapy.FormRequest("https://www.ekwing.com/exam/special/ajaxgetmodellist",
                                          formdata=get_paper_models_form,
                                          headers=self.base_paper_pages_header,
                                          callback=self.get_all_model_by_paper_id)
-                break
+                if index > 10:
+                    break
+
 
     @staticmethod
     def urllib2_opener():
@@ -117,13 +118,13 @@ class EkwingSpider(Spider):
         paper_body = json.loads(response.body)
         body_data = paper_body['data']
         model_datas = body_data['model_list']
-        paper_instance = PaperItem(id=body_data['base_info']['paper_id'],
+        paper_instance = PaperItem(origin_id=body_data['base_info']['paper_id'],
                                    paper_title=body_data['title'],
                                    all_model_count=body_data['total'],
                                    all_question_count=paper_body['data'])
 
         for model_id, model_data in model_datas.iteritems():
-            model_instance = ModelItem(id=model_id,
+            model_instance = ModelItem(origin_id=model_id,
                                        model_score=model_data['model_score'],
                                        model_type=model_data['model_type'],
                                        model_type_name=model_data['model_type_name'],
@@ -143,7 +144,8 @@ class EkwingSpider(Spider):
                 model_instance['question_num'] = model_data['_ques_num']
                 model_instance['listen_ori'] = model_data['listen_ori']
                 model_instance['title_audio'] = model_data['title_audio']
-            for question in model_data.get('ques_list', []):
-                pass
+            # model_instance['questions'] = model_data.get('ques_list', [])
             yield model_instance
+            yield paper_instance
+
 
