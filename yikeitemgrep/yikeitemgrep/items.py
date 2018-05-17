@@ -13,7 +13,6 @@ class PaperItem(scrapy.Item):
     # name = scrapy.Field()
     origin_id = scrapy.Field()
     paper_title = scrapy.Field()
-    all_question_count = scrapy.Field()
     all_model_count = scrapy.Field()
     paper_year = scrapy.Field()
 
@@ -36,6 +35,9 @@ class ModelItem(scrapy.Item):
     # model 规则的描述
     intro_text = scrapy.Field()
     intro_audio = scrapy.Field()
+    intro_video = scrapy.Field()
+    chap_info = scrapy.Field()
+    answer_time = scrapy.Field()
     # 朗读题的原文和音频
     article_text = scrapy.Field()
     article_audio = scrapy.Field()
