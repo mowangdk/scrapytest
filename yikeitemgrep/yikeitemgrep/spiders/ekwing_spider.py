@@ -139,6 +139,13 @@ class EkwingSpider(Spider):
                 model_instance['article_audio'] = model_data['real_audio']
                 model_instance['intro_text'] = model_data['intro_text']
                 model_instance['intro_audio'] = model_data['intro_audio']
+            elif model_instance['model_type'] == u'6':
+                model_instance['chap_info'] = model_data['chap_info']
+                model_instance['article_text'] = model_data['desc']
+                model_instance['article_pic'] = model_data['desc_pic']
+                model_instance['listen_ori'] = model_data['title_text']
+                print model_data
+                pass
             elif model_instance['model_type'] == u'204':
                 continue
             elif model_instance['model_type'] == u'201':
@@ -150,7 +157,7 @@ class EkwingSpider(Spider):
             else:
                 model_instance['question_num'] = model_data['_ques_num']
                 model_instance['listen_ori'] = model_data['listen_ori']
-                model_instance['title_audio'] = model_data['title_audio']
+                model_instance['listen_audio'] = model_data['title_audio']
             # model_instance['questions'] = model_data.get('ques_list', [])
             yield model_instance
         paper_instance['all_model_ids'] = model_ids

@@ -25,7 +25,7 @@ class ModelItem(scrapy.Item):
     model_name = scrapy.Field()
     model_score = scrapy.Field()
     listen_ori = scrapy.Field()
-    title_audio = scrapy.Field()
+    listen_audio = scrapy.Field()
     question_num = scrapy.Field()
     image_urls = scrapy.Field()
     images = scrapy.Field()
@@ -36,12 +36,13 @@ class ModelItem(scrapy.Item):
     # model 规则的描述
     intro_text = scrapy.Field()
     intro_audio = scrapy.Field()
-    intro_video = scrapy.Field()
     chap_info = scrapy.Field()
     answer_time = scrapy.Field()
     # 朗读题的原文和音频
     article_text = scrapy.Field()
     article_audio = scrapy.Field()
+    article_video = scrapy.Field()
+    article_pic = scrapy.Field()
     questions = scrapy.Field()
 
 
