@@ -15,6 +15,7 @@ class PaperItem(scrapy.Item):
     paper_title = scrapy.Field()
     all_model_count = scrapy.Field()
     paper_year = scrapy.Field()
+    all_model_ids = scrapy.Field()
 
 
 class ModelItem(scrapy.Item):

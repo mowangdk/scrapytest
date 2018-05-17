@@ -121,8 +121,10 @@ class EkwingSpider(Spider):
         paper_instance = PaperItem(origin_id=body_data['base_info']['paper_id'],
                                    paper_title=body_data['title'],
                                    all_model_count=body_data['total'])
+        model_ids = list()
 
         for model_id, model_data in model_datas.iteritems():
+            model_ids.append(model_id)
             model_instance = ModelItem(origin_id=model_id,
                                        model_score=model_data['model_score'],
                                        model_type=model_data['model_type'],
@@ -151,6 +153,7 @@ class EkwingSpider(Spider):
                 model_instance['title_audio'] = model_data['title_audio']
             # model_instance['questions'] = model_data.get('ques_list', [])
             yield model_instance
+        paper_instance['all_model_ids'] = model_ids
         yield paper_instance
 
 
